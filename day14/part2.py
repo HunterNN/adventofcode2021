@@ -1,25 +1,24 @@
-def enhance(sequence, pairs):
+def enhance(sequence, pairs, counts):
     new_sequence = []
     for seq in sequence:
         if seq[0] in pairs:
             new_sequence.append([seq[0][0]+pairs[seq[0]], seq[1]])
             new_sequence.append([pairs[seq[0]]+seq[0][1], seq[1]])
+            counts[pairs[seq[0]]] += seq[1]
         else:
             new_sequence.append(seq)
 
     return new_sequence
 
-def calculate(sequence):
-    letter_counts = {}
-    for i in range(ord('A'), ord('Z') + 1):
-        letter_counts[chr(i)] = 0
-    for i in range(ord('A'), ord('Z') + 1):
-        for part in sequence:
-            if chr(i) in part[0]:
-                letter_counts[chr(i)] += part[1]
-    print(letter_counts)
-    letter_counts.sort(key=lambda e: e[1])
-    value = letter_counts[-1][1] - letter_counts[0][1]
+def calculate(counts):
+
+    s = sorted(list(counts.items()), key=lambda e: e[1])
+    count = []
+    for pair in s:
+        if pair[1] > 0:
+            count.append(pair)
+    print(count)
+    value = count[-1][1] - count[0][1]
     return value
 
 def createSequenceFromString(string):
@@ -36,10 +35,13 @@ def shrinkSequence(sequence):
             new_sequence.append(sequence[i])
         else:
             sequence[i + 1][1] +=  sequence[i][1]
+
+        if i == len(sequence) - 2:
+            new_sequence.append(sequence[-1])
         
     return new_sequence
 
-with open("test.txt", 'r') as f:
+with open("input.txt", 'r') as f:
     lines = f.readlines()
     sequence = ""
     pairs = {}
@@ -51,15 +53,17 @@ with open("test.txt", 'r') as f:
             if "->" in line:
                 parts = line.split(" -> ")
                 pairs[parts[0]] = parts[1]
+    letter_counts = {}
+    for i in range(ord('A'), ord('Z') + 1):
+        letter_counts[chr(i)] = 0
     
+    for i in sequence:
+        letter_counts[i] +=1
+
     sequence = createSequenceFromString(sequence)
-    for i in range(10):
-        sequence = enhance(sequence, pairs)
+    for i in range(40):
+        sequence = enhance(sequence, pairs, letter_counts)
         sequence = shrinkSequence(sequence)
 
     print(sequence)
-    # for i in range(3):
-    #     print(i)
-    #     sequence = enhance(sequence, pairs)
-    
-    print(calculate(sequence))
+    print(calculate(letter_counts))
